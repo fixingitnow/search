@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react'
+import React, { useState } from 'react'
 import styled from '@emotion/styled'
-import upIcon from './up.png'
+import upIcon from '../icons/up.png'
 
 const MainContainer = styled.div({
     marginBottom: '200px',
@@ -71,13 +71,17 @@ const SearchButton = styled.button<SearchIconProps>(props => ({
     },
 }))
 
-const Search = () => {
-    const [search, setSearch] = React.useState('')
-    const [validSearch, setIsValidSearch] = React.useState(false)
-    const [results, setResults] = React.useState({})
+const serverURL = 'http://localhost:3001'
 
-    const fetchData = async () => {
-        let data = { 'sentiment': 'positive' }
+const Search = () => {
+    const [searchTerm, setSearchTerm] = useState('')
+    const [validSearch, setIsValidSearch] = useState(false)
+    const [results, setResults] = useState({})
+
+    const fetchData = async (searchTerm: string) => {
+        const url = serverURL + '/api/v1/sentiment/' + searchTerm
+        const response = await fetch(url)
+        const data = await response.json()
         return data
     }
 
@@ -91,11 +95,12 @@ const Search = () => {
             setIsValidSearch(false)
             setResults({})
         }
-        setSearch(e.target.value)
+        setSearchTerm(e.target.value)
     }
 
-    const fetchResults = async () => {
-        const aiData = await fetchData()
+    const fetchResults = async (searchTerm: string) => {
+        const aiData = await fetchData(searchTerm)
+        console.log(aiData)
         setResults(aiData)
     }
 
@@ -109,10 +114,10 @@ const Search = () => {
 
             <SearchBar>
                 <SearchBarInput
-                    value={search} onChange={handleChange} type='text' placeholder='Chat with CynchAI...'>
+                    value={searchTerm} onChange={handleChange} type='text' placeholder='Chat with CynchAI...'>
                 </SearchBarInput>
                 <SearchButton
-                    onClick={fetchResults}
+                    onClick={() => fetchResults(searchTerm)}
                     isFocused={validSearch}
                     disabled={!validSearch}
                 >
